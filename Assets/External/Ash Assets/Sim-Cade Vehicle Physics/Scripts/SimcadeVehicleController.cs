@@ -559,12 +559,10 @@ namespace Ashsvp
                     tempGroundedProperty = value;
                     if (tempGroundedProperty)
                     {
-                        Debug.Log("Grounded");
                         VehicleEvents.OnGrounded.Invoke();
                     }
                     else
                     {
-                        Debug.Log("Take off");
                         VehicleEvents.OnTakeOff.Invoke();
                     }
                 }
