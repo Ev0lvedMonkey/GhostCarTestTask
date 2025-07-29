@@ -6,7 +6,7 @@ namespace TheGame.Code
     public class GhostCarController : MonoBehaviour
     {
         private const float Speed = 10f;
-        private const float RotationSpeed = 5f;
+        private const float RotationSpeed = 3f;
 
         private List<Vector3> _ghostPositions;
         private int _currentPositionIndex;
@@ -24,7 +24,7 @@ namespace TheGame.Code
                 Vector3 direction = (_ghostPositions[1] - _ghostPositions[0]).normalized;
                 if (direction != Vector3.zero)
                 {
-                    transform.rotation = Quaternion.LookRotation(direction);
+                    transform.rotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
                 }
             }
         }

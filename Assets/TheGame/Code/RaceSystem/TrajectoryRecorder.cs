@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using TheGame.Code.RaceSystem;
 using UnityEngine;
 
 namespace TheGame.Code
 {
-    public class TrajectoryRecorder
+    public class TrajectoryRecorder : ITrajectoryRecorder
     {
-        private List<Vector3> _recordedPositions = new List<Vector3>();
+        private readonly List<Vector3> _recordedPositions = new List<Vector3>();
 
         public void RecordPosition(Vector3 position)
         {
