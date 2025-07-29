@@ -7,7 +7,7 @@ namespace TheGame.Code
         protected override void Awake()
         {
             base.Awake();
-            SetTriggerAction(() => _raceManager.FinishLap());
+            SetTriggerAction(() => _raceManager.StartFinishLap());
         }
     }
 }

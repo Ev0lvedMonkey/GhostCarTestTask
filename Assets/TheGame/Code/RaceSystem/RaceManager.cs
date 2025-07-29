@@ -1,6 +1,5 @@
-﻿using TMPro;
+﻿using System;
 using UnityEngine;
-using UnityEngine.UI;
 using Ashsvp;
 
 namespace TheGame.Code
@@ -11,10 +10,6 @@ namespace TheGame.Code
         [SerializeField] private GameObject _playerCarPrefab;
         [SerializeField] private GameObject _ghostCarPrefab;
         [SerializeField] private Transform _spawnPoint;
-        
-        [Header("UI Components")]
-        [SerializeField] private TextMeshProUGUI _raceNumberText;
-        [SerializeField] private Button _startRaceButton;
 
         private TrajectoryRecorder _trajectoryRecorder;
         private GhostCarController _ghostCarController;
@@ -23,9 +18,20 @@ namespace TheGame.Code
         private bool _isFirstLap = true;
         private bool _isRaceStarted;
 
+        private const int FirstRace = 1;
+        private const int SecondRace = 2;
+        private const float RaceRestartTime = 3f;
+
+        public event Action<int> OnRaceNumberChanged;
+
         private void Awake()
         {
-            _startRaceButton.onClick.AddListener(StartRace);
+            _trajectoryRecorder = new TrajectoryRecorder();
+            _playerCar = Instantiate(_playerCarPrefab, _spawnPoint.position, _spawnPoint.rotation);
+            _ghostCar = Instantiate(_ghostCarPrefab, _spawnPoint.position, _spawnPoint.rotation);
+            _playerCar.SetActive(false);
+            _ghostCar.SetActive(false);
+            _ghostCarController = _ghostCar.GetComponent<GhostCarController>();
         }
 
         private void Update()
@@ -38,64 +44,43 @@ namespace TheGame.Code
             }
             else
             {
-                _ghostCarController?.UpdateGhost(Time.deltaTime);
+                _ghostCarController?.MoveGhost(Time.deltaTime);
             }
-        }
-
-        public void StartRace()
-        {
-            _trajectoryRecorder = new TrajectoryRecorder();
-            if (_isRaceStarted) return;
-
-            _isRaceStarted = true;
-
-            _playerCar = Instantiate(_playerCarPrefab, _spawnPoint.position, _spawnPoint.rotation);
-            _trajectoryRecorder.ClearTrajectory();
-            _raceNumberText.text = "1";
         }
 
         public void RestartRace()
         {
-            _isRaceStarted = false;
+            _isRaceStarted = true;
             _isFirstLap = true;
-            _raceNumberText.text = "1";
+            _playerCar.SetActive(true);
+            _ghostCar.SetActive(false);
+            _playerCar.transform.SetPositionAndRotation(_spawnPoint.position, _spawnPoint.rotation);
             _trajectoryRecorder.ClearTrajectory();
+            OnRaceNumberChanged?.Invoke(FirstRace);
 
-            if (_playerCar != null)
+            if (_playerCar.TryGetComponent(out SimcadeVehicleController vehicleController))
             {
-                Destroy(_playerCar);
+                vehicleController.Halt();
             }
-            if (_ghostCar != null)
-            {
-                Destroy(_ghostCar);
-            }
-
-            StartRace();
         }
 
-        public void FinishLap()
+        public void StartFinishLap()
         {
             if (_isFirstLap)
             {
                 _isFirstLap = false;
-                _raceNumberText.text = "2";
+                OnRaceNumberChanged?.Invoke(SecondRace);
 
-                _ghostCar = Instantiate(_ghostCarPrefab, _spawnPoint.position, _spawnPoint.rotation);
-                _ghostCarController = _ghostCar.GetComponent<GhostCarController>();
+                _ghostCar.SetActive(true);
+                _ghostCar.transform.SetPositionAndRotation(_spawnPoint.position, _spawnPoint.rotation);
                 _ghostCarController.Initialize(_trajectoryRecorder.GetRecordedPositions());
 
-                _playerCar.transform.position = _spawnPoint.position;
-                _playerCar.transform.rotation = _spawnPoint.rotation;
+                _playerCar.transform.SetPositionAndRotation(_spawnPoint.position, _spawnPoint.rotation);
                 _trajectoryRecorder.ClearTrajectory();
 
                 if (_playerCar.TryGetComponent(out SimcadeVehicleController vehicleController))
                 {
-                    var rb = _playerCar.GetComponent<Rigidbody>();
-                    rb.linearVelocity = Vector3.zero;
-                    rb.angularVelocity = Vector3.zero;
-                    vehicleController.accelerationInput = 0f;
-                    vehicleController.brakeInput = 0f;
-                    vehicleController.steerInput = 0f;
+                    vehicleController.Halt();
                 }
             }
             else
@@ -115,17 +100,9 @@ namespace TheGame.Code
         private void EndRace()
         {
             _isRaceStarted = false;
-
-            if (_playerCar != null)
-            {
-                Destroy(_playerCar);
-            }
-            if (_ghostCar != null)
-            {
-                Destroy(_ghostCar);
-            }
-
-            Invoke(nameof(RestartRace), 3f);
+            _playerCar.SetActive(false);
+            _ghostCar.SetActive(false);
+            Invoke(nameof(RestartRace), RaceRestartTime);
         }
     }
 }

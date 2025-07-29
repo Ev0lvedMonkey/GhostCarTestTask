@@ -241,6 +241,16 @@ namespace Ashsvp
 
         }
 
+        public void Halt()
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            accelerationInput = 0f;
+            brakeInput = 0f;
+            steerInput = 0f;
+        }
+        
+        
         void AddAcceleration(float accelerationInput)
         {
             float deltaSpeed = Acceleration * accelerationInput * Time.fixedDeltaTime;
