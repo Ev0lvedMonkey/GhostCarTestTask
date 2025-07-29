@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace TheGame.Code
 {
+    //Изнаально абстракция имела смысл из-за 2> наследников, но один из наследников оказался лишним
     [RequireComponent(typeof(Collider))]
     public abstract class TriggerZone<T> : MonoBehaviour where T : Component
     {

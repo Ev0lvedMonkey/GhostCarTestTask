@@ -47,6 +47,10 @@ namespace Ashsvp
         public Transform[] HardPoints = new Transform[4];
         public Transform[] Wheels;
 
+        [Header("Physics")]
+        [Space(10)]
+        [SerializeField] private LayerMask _groundLayerMask;
+
         [HideInInspector]
         public Vector3 carVelocity;
 
@@ -329,7 +333,7 @@ namespace Ashsvp
         {
             var direction = -transform.up;
 
-            if (Physics.SphereCast(hardPoint + (transform.up * wheelRadius), wheelRadius, direction, out wheelHit, MaxSpringDistance))
+            if (Physics.SphereCast(hardPoint + (transform.up * wheelRadius), wheelRadius, direction, out wheelHit, MaxSpringDistance, _groundLayerMask))
             {
                 WheelIsGrounded = true;
             }

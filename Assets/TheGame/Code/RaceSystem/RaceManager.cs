@@ -1,14 +1,20 @@
 ﻿using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+using Ashsvp;
 
 namespace TheGame.Code
 {
     public class RaceManager : MonoBehaviour
     {
+        [Header("Data")]
         [SerializeField] private GameObject _playerCarPrefab;
         [SerializeField] private GameObject _ghostCarPrefab;
-        [SerializeField] private TextMeshProUGUI _raceNumberText;
         [SerializeField] private Transform _spawnPoint;
+        
+        [Header("UI Components")]
+        [SerializeField] private TextMeshProUGUI _raceNumberText;
+        [SerializeField] private Button _startRaceButton;
 
         private TrajectoryRecorder _trajectoryRecorder;
         private GhostCarController _ghostCarController;
@@ -19,7 +25,7 @@ namespace TheGame.Code
 
         private void Awake()
         {
-            _trajectoryRecorder = new TrajectoryRecorder();
+            _startRaceButton.onClick.AddListener(StartRace);
         }
 
         private void Update()
@@ -38,6 +44,7 @@ namespace TheGame.Code
 
         public void StartRace()
         {
+            _trajectoryRecorder = new TrajectoryRecorder();
             if (_isRaceStarted) return;
 
             _isRaceStarted = true;
@@ -63,7 +70,7 @@ namespace TheGame.Code
                 Destroy(_ghostCar);
             }
 
-            _playerCar = Instantiate(_playerCarPrefab, _spawnPoint.position, _spawnPoint.rotation);
+            StartRace();
         }
 
         public void FinishLap()
@@ -72,14 +79,24 @@ namespace TheGame.Code
             {
                 _isFirstLap = false;
                 _raceNumberText.text = "2";
-                
+
                 _ghostCar = Instantiate(_ghostCarPrefab, _spawnPoint.position, _spawnPoint.rotation);
                 _ghostCarController = _ghostCar.GetComponent<GhostCarController>();
                 _ghostCarController.Initialize(_trajectoryRecorder.GetRecordedPositions());
-                
+
                 _playerCar.transform.position = _spawnPoint.position;
                 _playerCar.transform.rotation = _spawnPoint.rotation;
                 _trajectoryRecorder.ClearTrajectory();
+
+                if (_playerCar.TryGetComponent(out SimcadeVehicleController vehicleController))
+                {
+                    var rb = _playerCar.GetComponent<Rigidbody>();
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                    vehicleController.accelerationInput = 0f;
+                    vehicleController.brakeInput = 0f;
+                    vehicleController.steerInput = 0f;
+                }
             }
             else
             {
@@ -98,7 +115,6 @@ namespace TheGame.Code
         private void EndRace()
         {
             _isRaceStarted = false;
-            _raceNumberText.text = "Гонка завершена";
 
             if (_playerCar != null)
             {
@@ -109,20 +125,7 @@ namespace TheGame.Code
                 Destroy(_ghostCar);
             }
 
-            Invoke(nameof(StartSecondLap), 3f);
-        }
-
-        private void StartSecondLap()
-        {
-            _isFirstLap = false;
-            _isRaceStarted = true;
-            _raceNumberText.text = "2";
-
-            _playerCar = Instantiate(_playerCarPrefab, _spawnPoint.position, _spawnPoint.rotation);
-
-            _ghostCar = Instantiate(_ghostCarPrefab, _spawnPoint.position, _spawnPoint.rotation);
-            _ghostCarController = _ghostCar.GetComponent<GhostCarController>();
-            _ghostCarController.Initialize(_trajectoryRecorder.GetRecordedPositions());
+            Invoke(nameof(RestartRace), 3f);
         }
     }
 }

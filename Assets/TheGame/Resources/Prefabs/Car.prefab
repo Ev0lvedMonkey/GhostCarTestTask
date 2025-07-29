@@ -190,6 +190,9 @@ MonoBehaviour:
   - {fileID: 6113078390508970255}
   - {fileID: 2736141687870694219}
   - {fileID: 594814097376575053}
+  _groundLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
   carVelocity: {x: 0, y: 0, z: 0}
   VehicleEvents:
     OnTakeOff:
