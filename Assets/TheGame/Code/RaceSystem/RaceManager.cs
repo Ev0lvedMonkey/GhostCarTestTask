@@ -21,7 +21,6 @@ namespace TheGame.Code
 
         private const int FirstRace = 1;
         private const int SecondRace = 2;
-        private const float RaceRestartTime = 3f;
 
         public event Action<int> OnRaceNumberChanged;
 
@@ -41,14 +40,14 @@ namespace TheGame.Code
             _ghostCarController = _ghostCar.GetComponent<GhostCarController>();
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
             if (!_isRaceStarted) return;
 
             if (_isFirstLap)
                 RecordPlayerPosition();
             else
-                _ghostCarController?.MoveGhost(Time.deltaTime);
+                _ghostCarController?.MoveGhost(Time.fixedDeltaTime);
         }
 
         public void RestartRace()
@@ -63,8 +62,6 @@ namespace TheGame.Code
 
             if (_playerCar.TryGetComponent(out SimcadeVehicleController vehicleController))
                 vehicleController.Halt();
-
-            Debug.Log("RestartRace");
         }
 
         public void StartFinishLap()
@@ -83,7 +80,6 @@ namespace TheGame.Code
 
                 if (_playerCar.TryGetComponent(out SimcadeVehicleController vehicleController))
                     vehicleController.Halt();
-                Debug.Log("First lap");
             }
             else
             {
@@ -102,8 +98,7 @@ namespace TheGame.Code
             _isRaceStarted = false;
             _playerCar.SetActive(false);
             _ghostCar.SetActive(false);
-            Invoke(nameof(RestartRace), RaceRestartTime);
-            Debug.Log("EndRace");
+            RestartRace();
         }
     }
 }

@@ -6,7 +6,8 @@ namespace TheGame.Code
     public class GhostCarController : MonoBehaviour
     {
         private const float Speed = 10f;
-        private const float RotationSpeed = 3f;
+        private const float RotationSpeed = 10f; 
+        private const float MinPointDistance = 0.1f;
 
         private List<Vector3> _ghostPositions;
         private int _currentPositionIndex;
@@ -47,7 +48,7 @@ namespace TheGame.Code
             Vector3 direction = (targetPosition - transform.position).normalized;
             if (direction != Vector3.zero)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                Quaternion targetRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
                 transform.rotation = Quaternion.Slerp(
                     transform.rotation,
                     targetRotation,
@@ -55,9 +56,17 @@ namespace TheGame.Code
                 );
             }
 
-            if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+            if (Vector3.Distance(transform.position, targetPosition) < 0.2f)
             {
-                _currentPositionIndex++;
+                do
+                {
+                    _currentPositionIndex++;
+                    if (_currentPositionIndex >= _ghostPositions.Count - 1)
+                    {
+                        break;
+                    }
+                    targetPosition = _ghostPositions[_currentPositionIndex + 1];
+                } while (Vector3.Distance(transform.position, targetPosition) < MinPointDistance);
             }
         }
     }
